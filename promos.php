@@ -28,6 +28,13 @@ $articulos = $articulos . " LIMIT $iniciar,50";
 // echo $articulos;
 
 $categorias = "SELECT * FROM categoria WHERE Activa = 1";
+
+if (!empty($_GET['padre'])) {
+    # code...
+    $padre = $_GET['padre'];
+    $categorias = $categorias . " AND IDCategoriaPadre = $padre ";
+}
+
 $categorias_padre = "SELECT * FROM categoria_padre WHERE Activa = 1";
 $result_tabla = mysqli_query($conexion, $articulos);
 
@@ -83,12 +90,42 @@ $paginas = Ceil($total / 50);
                     </div>
                     <div class="row">
                         <div class="col">
-                        <button type="submit" class="btn btn-primary mb-3" onclick="tipo_filtro('',1)">Buscar</button>
+                            <button type="submit" class="btn btn-primary mb-3" onclick="tipo_filtro('',1)">Buscar</button>
                         </div>
                     </div>
 
 
                 </div>
+                <div class="mt-5"></div>
+                <?php if (!empty($_GET['padre'])) { ?>
+
+                    <div class="row">
+                        <div class="alert alert-primary   fade show" role="alert">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="tipo_filtro('',3 )"></button>
+                            Categoria padre
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <?php if (!empty($_GET['categoria'])) { ?>
+
+                    <div class="row">
+                        <div class="alert alert-primary   fade show" role="alert">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="tipo_filtro('',2 )"></button>
+                            Categoria
+                        </div>
+                    </div>
+                <?php } ?>
+
+                <?php if (!empty($_GET['search'])) { ?>
+
+                    <div class="row">
+                        <div class="alert alert-primary   fade show" role="alert">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" onclick="tipo_filtro('',1 )"></button>
+                            Buscar <strong><?php echo $_GET['search'] ?></strong>
+                        </div>
+                    </div>
+                <?php } ?>
 
                 <div class="mt-5"></div>
 
@@ -113,7 +150,28 @@ $paginas = Ceil($total / 50);
 
                 </div>
                 <div class="mt-5"></div>
+                <?php if (empty($_GET['padre'])) { ?>
+                    <div class="g-box p-4 categoria">
+                        <span class="font-w-500"> Categoria Padre</span>
+                        <!-- items -->
+                        <?php
+                        $result = mysqli_query($conexion, $categorias_padre);
 
+
+                        while ($row = mysqli_fetch_assoc($result)) {
+                        ?>
+                            <li class="cat-item cat-parent" onclick="tipo_filtro(<?php echo $row['IDCategoriaPadre'] . ',3' ?>)">
+                                <!-- <div  class=" click"> -->
+                                <a><?php echo $row["DCategoriaPadre"] ?> </a>
+                                <!-- </div> -->
+
+                            </li>
+
+                        <?php } ?>
+
+
+                    </div>
+                <?php } ?>
             </div>
 
             <div class="result-list mt-5 mb-5 pl-5 col ml-3">
@@ -276,7 +334,7 @@ $paginas = Ceil($total / 50);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
 
     <script>
-        var numpage, search, categoria;
+        var numpage, search, categoria, padre;
         init_search();
 
         function init_search() {
@@ -285,6 +343,7 @@ $paginas = Ceil($total / 50);
             numpage = urlParams.get("pagina");
             search = urlParams.get("search");
             categoria = urlParams.get("categoria");
+            padre = urlParams.get("padre");
         }
 
         function searchs() {
@@ -300,6 +359,11 @@ $paginas = Ceil($total / 50);
             if (categoria != null) {
                 params = params + "&categoria=" + categoria;
             }
+
+            if (padre != null) {
+                params = params + "&padre=" + padre;
+            }
+
             console.log(params);
             document.location.href = "./" + "promos.php?" + params;
         }
@@ -311,11 +375,14 @@ $paginas = Ceil($total / 50);
                     numpage = valor;
                     break;
                 case 1:
-                    
+
                     search = document.getElementById('exampleFormControlInput1').value;
                     break;
                 case 2:
                     categoria = valor;
+                    break;
+                case 3:
+                    padre = valor;
                     break;
                 default:
                     numpage = valor;
